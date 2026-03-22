@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import VoteButtons from '@/app/components/VoteButtons'
+import CaptionCarousel from '@/app/components/CaptionCarousel'
 import Link from 'next/link'
 
 export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // LOGIN PAGE - if not authenticated
+  // SIGN IN PAGE
   if (!user) {
     async function signInWithGoogle() {
       'use server'
@@ -18,54 +18,69 @@ export default async function Home() {
           redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
         },
       })
-      
       if (data.url) {
         redirect(data.url)
       }
     }
 
     return (
-      <div style={{ 
+      <div style={{
         minHeight: '100vh',
+        background: 'linear-gradient(145deg, #2a2d4a 0%, #0f1019 60%)',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        padding: '20px',
       }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '60px 40px',
-          textAlign: 'center',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-          maxWidth: '400px'
-        }}>
-          <h1 style={{ 
-            fontSize: '32px', 
-            marginBottom: '15px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 'bold'
+        {/* Title */}
+        <div style={{ marginBottom: '60px', textAlign: 'center' }}>
+          <h1 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            fontSize: '3rem',
+            color: '#f0ece4',
+            letterSpacing: '-0.01em',
+            marginBottom: '8px',
           }}>
-            🎭 Caption Voting
+            The Humor Project
           </h1>
-          <p style={{ fontSize: '16px', color: '#666', marginBottom: '30px' }}>
-            Vote on AI-generated captions and upload your own images
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 300,
+            fontSize: '1.1rem',
+            color: 'rgba(240, 236, 228, 0.55)',
+            letterSpacing: '0.15em',
+          }}>
+            caption voting
           </p>
+        </div>
+
+        {/* Sign In Card */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.06)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '12px',
+          padding: '60px 50px',
+          textAlign: 'center',
+          maxWidth: '420px',
+          width: '100%',
+        }}>
           <form action={signInWithGoogle}>
             <button type="submit" style={{
-              padding: '15px 40px',
-              background: '#4285f4',
-              color: 'white',
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              background: 'rgba(255, 255, 255, 0.9)',
+              color: '#1a1a2e',
               border: 'none',
-              borderRadius: '50px',
+              padding: '14px 40px',
               cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(66, 133, 244, 0.4)'
+              letterSpacing: '0.02em',
+              width: '100%',
             }}>
-              Sign in with Google
+              sign in
             </button>
           </form>
         </div>
@@ -73,193 +88,138 @@ export default async function Home() {
     )
   }
 
-  // CAPTIONS PAGE - if authenticated
+  // VOTING PAGE — fetch captions
   const { data: captions } = await supabase
-  .from('captions')
-  .select(`
-    *,
-    images (
-      id,
-      url,
-      created_datetime_utc
-    )
-  `)
-  .order('created_datetime_utc', { ascending: false })
-  .limit(20)
+    .from('captions')
+    .select(`
+      *,
+      images (
+        id,
+        url,
+        created_datetime_utc
+      )
+    `)
+    .order('created_datetime_utc', { ascending: false })
+    .limit(50)
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      background: 'linear-gradient(145deg, #2a2d4a 0%, #0f1019 60%)',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      {/* Header */}
-      <div style={{
-        background: 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '20px 40px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+      {/* Title */}
+      <div style={{ paddingTop: '40px', textAlign: 'center' }}>
+        <h1 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontWeight: 700,
+          fontSize: '2.8rem',
+          color: '#f0ece4',
+          letterSpacing: '-0.01em',
+          marginBottom: '6px',
         }}>
-          <h1 style={{ 
-            fontSize: '28px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 'bold',
-            margin: 0
-          }}>
-            🎭 Caption Voting
-          </h1>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <Link href="/upload" style={{
-              padding: '10px 24px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '50px',
-              fontWeight: '600',
-              fontSize: '14px',
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
-            }}>
-              + Upload Image
-            </Link>
-            <span style={{ color: '#666', fontSize: '14px' }}>{user.email}</span>
-            <form action="/auth/signout" method="post">
-              <button style={{
-                padding: '8px 20px',
-                background: 'transparent',
-                border: '2px solid #e5e5e5',
-                borderRadius: '50px',
-                color: '#666',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}>
-                Sign Out
-              </button>
-            </form>
-          </div>
-        </div>
+          The Humor Project
+        </h1>
+        <p style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 300,
+          fontSize: '1rem',
+          color: 'rgba(240, 236, 228, 0.55)',
+          letterSpacing: '0.15em',
+        }}>
+          caption voting
+        </p>
       </div>
-{/* Caption Grid */}
-<div style={{ 
-        maxWidth: '1200px', 
-        margin: '0 auto',
-        padding: '40px 20px'
+
+      {/* Carousel area */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px 20px 120px 20px',
       }}>
-        {/* Welcome Title */}
-        <h2 style={{
-          fontSize: '36px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          color: 'white',
-          marginBottom: '40px',
-          textShadow: '0 2px 10px rgba(0,0,0,0.2)'
-        }}>
-          Welcome to The Humor Project
-        </h2>
-
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
-          gap: '30px'
-        }}>
-          {captions?.map((caption: any) => (
-            <div key={caption.id} style={{
-              background: 'white',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s, box-shadow 0.2s'
-            }}>
-              {/* Image */}
-              {caption.images && (
-                <div style={{
-                  width: '100%',
-                  height: '250px',
-                  overflow: 'hidden',
-                  background: '#f5f5f5'
-                }}>
-                  <img
-                    src={caption.images.url}
-                    alt="Caption image"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Caption Content */}
-              <div style={{ padding: '24px' }}>
-                <p style={{
-                  fontSize: '18px',
-                  lineHeight: '1.6',
-                  color: '#333',
-                  marginBottom: '20px',
-                  minHeight: '60px'
-                }}>
-                  {caption.content || caption.caption_content || 'No caption available'}
-                </p>
-
-                {/* Vote Stats & Buttons */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingTop: '20px',
-                  borderTop: '1px solid #f0f0f0'
-                }}>
-                  <div style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: caption.like_count > 0 ? '#10b981' : '#666'
-                  }}>
-                    {caption.like_count || 0} 👍
-                  </div>
-                  <VoteButtons captionId={caption.id} userId={user.id} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {!captions || captions.length === 0 && (
+        {captions && captions.length > 0 ? (
+          <CaptionCarousel captions={captions} userId={user.id} />
+        ) : (
           <div style={{
             textAlign: 'center',
-            padding: '60px 20px',
-            background: 'white',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+            color: 'rgba(240, 236, 228, 0.55)',
+            fontFamily: "'DM Sans', sans-serif",
           }}>
-            <p style={{ fontSize: '18px', color: '#666' }}>
-              No captions yet. Be the first to upload an image!
-            </p>
+            <p style={{ fontSize: '1.1rem', marginBottom: '20px' }}>No captions yet. Upload an image to get started.</p>
             <Link href="/upload" style={{
-              display: 'inline-block',
-              marginTop: '20px',
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: 600,
+              fontSize: '1rem',
+              background: 'rgba(255, 255, 255, 0.9)',
+              color: '#1a1a2e',
+              border: 'none',
               padding: '12px 32px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
               textDecoration: 'none',
-              borderRadius: '50px',
-              fontWeight: '600'
+              display: 'inline-block',
             }}>
-              Upload Image
+              upload picture
             </Link>
           </div>
         )}
+      </div>
+
+      {/* Bottom bar */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '24px 32px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 50,
+        background: 'linear-gradient(to top, #0f1019 0%, transparent 100%)',
+      }}>
+        <Link href="/upload" style={{
+          fontFamily: "'Playfair Display', serif",
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          background: 'rgba(255, 255, 255, 0.9)',
+          color: '#1a1a2e',
+          border: 'none',
+          padding: '10px 24px',
+          textDecoration: 'none',
+          display: 'inline-block',
+        }}>
+          upload picture
+        </Link>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+        }}>
+          <span style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '0.85rem',
+            color: 'rgba(240, 236, 228, 0.55)',
+          }}>
+            {user.email}
+          </span>
+          <form action="/auth/signout" method="post">
+            <button type="submit" style={{
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              background: 'rgba(255, 255, 255, 0.9)',
+              color: '#1a1a2e',
+              border: 'none',
+              padding: '8px 20px',
+              cursor: 'pointer',
+            }}>
+              Log Out
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

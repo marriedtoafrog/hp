@@ -32,8 +32,8 @@ export async function vote(captionId: string, userId: string, voteValue: number)
       caption_id: captionId,
       profile_id: profile.id,
       vote_value: voteValue,
-      created_datetime_utc: new Date().toISOString(),
-      modified_datetime_utc: new Date().toISOString()
+      created_by_user_id: profile.id,
+      modified_by_user_id: profile.id
     })
 
   // Check if error is duplicate key error (code 23505)
